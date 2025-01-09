@@ -3,8 +3,6 @@ from flask import Flask, render_template, request, redirect, url_for, session
 import bcrypt
 from werkzeug.utils import secure_filename
 import psycopg2
-
-
 import os
 
 # Exemplo de conexão com o banco de dados

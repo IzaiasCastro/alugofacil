@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meus Imóveis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+    {% include 'header.html' %}
+
+    <div class="container mx-auto p-6">
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <h1 class="text-3xl font-semibold mb-4">Meus Imóveis</h1>
+            
+            {% if apartamentos %}
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {% for apartamento in apartamentos %}
+                        <div class="bg-white p-4 rounded-lg shadow-md">
+                            <h2 class="text-xl font-semibold">{{ apartamento.nome }}</h2>
+                            <p class="text-sm text-gray-700 mb-4">{{ apartamento.tipo }} - R$ {{ apartamento.preco }}</p>
+                            <p class="text-sm text-gray-700 mb-4">{{ apartamento.descricao }}</p>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+                                {% for foto in apartamento.fotos %}
+                                    <img src="/{{ foto }}" alt="Imagem do apartamento" class="w-full h-48 object-cover rounded-md">
+                                {% endfor %}
+                            </div>
+
+                            <div class="mt-4">
+                                <a href="{{ url_for('apartamento', id=apartamento.id) }}" class="text-blue-500 hover:underline">Ver Detalhes</a>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="text-center text-gray-700">Você não tem apartamentos cadastrados.</p>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>
