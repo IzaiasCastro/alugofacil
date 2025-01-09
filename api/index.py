@@ -3,8 +3,6 @@ from flask import Flask, render_template, request, redirect, url_for, session
 import bcrypt
 from werkzeug.utils import secure_filename
 import psycopg2
-from psycopg2.extras import DictCursor
-import binascii
 
 
 import os
@@ -89,36 +87,32 @@ def login():
     if request.method == 'POST':
         email = request.form.get('email')
         senha = request.form.get('senha')
-
         if not email or not senha:
             return "Por favor, preencha todos os campos.", 400
-
+        # Conexão com o banco
         conn = get_db_connection()
-        # try:
-        with conn.cursor(cursor_factory=DictCursor) as cursor:
+        try:
+            with conn.cursor() as cursor:
+                # Consulta o usuário pelo email
                 cursor.execute("SELECT id, senha, tipo FROM usuarios WHERE email = %s", (email,))
-                user = cursor.fetchone()
-
-        if not user:
+                user = cursor.fetchone()  # Retorna um dicionário ou None
+            # Verifica se o usuário foi encontrado
+            if user is None:
                 return "Usuário não encontrado", 404
-        
-        # Converte o hash de hexadecimal para string
-        hashed_password = binascii.unhexlify(user['senha']).decode('utf-8')
-
-        if bcrypt.checkpw(senha.encode('utf-8'), hashed_password.encode('utf-8')):
-            session['user_id'] = user['id']
-            session['user_type'] = user['tipo']
-            return redirect(url_for('index'))
-        else:
-            return "Senha inválida", 401
-        # except Exception as e:
-        #     app.logger.error(f"Erro no login: {e}")
-        #     return "Ocorreu um erro no servidor", 500
-        # finally:
-        #     conn.close()
-
+            # Verifica a senha
+            hashed_password = user['senha']
+            if bcrypt.checkpw(senha.encode('utf-8'), hashed_password.encode('utf-8')):
+                session['user_id'] = user['id']  # Armazena o user_id na sessão
+                session['user_type'] = user['tipo']  # Armazena o tipo de usuário
+                return redirect(url_for('index'))
+            else:
+                return "Senha inválida", 401
+        except Exception as e:
+            app.logger.error(f"Erro no login: {e}")
+            return "Ocorreu um erro no servidor", 500
+        finally:
+            conn.close()
     return render_template('login.html')
-
 
 @app.route('/cadastro', methods=['GET', 'POST'])
 def cadastro():
