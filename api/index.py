@@ -92,26 +92,26 @@ def login():
             return "Por favor, preencha todos os campos.", 400
 
         conn = get_db_connection()
-        try:
-            with conn.cursor(cursor_factory=DictCursor) as cursor:
+        # try:
+        with conn.cursor(cursor_factory=DictCursor) as cursor:
                 cursor.execute("SELECT id, senha, tipo FROM usuarios WHERE email = %s", (email,))
                 user = cursor.fetchone()
 
-            if not user:
+        if not user:
                 return "Usuário não encontrado", 404
 
-            hashed_password = user['senha']
-            if bcrypt.checkpw(senha.encode('utf-8'), hashed_password.encode('utf-8')):
+        hashed_password = user['senha']
+        if bcrypt.checkpw(senha.encode('utf-8'), hashed_password.encode('utf-8')):
                 session['user_id'] = user['id']
                 session['user_type'] = user['tipo']
                 return redirect(url_for('index'))
-            else:
+        else:
                 return "Senha inválida", 401
-        except Exception as e:
-            app.logger.error(f"Erro no login: {e}")
-            return "Ocorreu um erro no servidor", 500
-        finally:
-            conn.close()
+        # except Exception as e:
+        #     app.logger.error(f"Erro no login: {e}")
+        #     return "Ocorreu um erro no servidor", 500
+        # finally:
+        #     conn.close()
 
     return render_template('login.html')
 
