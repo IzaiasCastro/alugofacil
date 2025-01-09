@@ -91,29 +91,29 @@ def login():
 
         # Conexão com o banco
         conn = get_db_connection()
-        try:
-            with conn.cursor() as cursor:
+        # try:
+        with conn.cursor() as cursor:
                 # Consulta o usuário pelo email
                 cursor.execute("SELECT id, senha, tipo FROM usuarios WHERE email = %s", (email,))
                 user = cursor.fetchone()  # Retorna um dicionário ou None
 
             # Verifica se o usuário foi encontrado
-            if user is None:
+        if user is None:
                 return "Usuário não encontrado", 404
 
             # Verifica a senha
-            hashed_password = user['senha']
-            if bcrypt.checkpw(senha.encode('utf-8'), hashed_password.encode('utf-8')):
-                # session['user_id'] = user['id']  # Armazena o user_id na sessão
-                # session['user_type'] = user['tipo']  # Armazena o tipo de usuário
+        hashed_password = user['senha']
+        if bcrypt.checkpw(senha.encode('utf-8'), hashed_password.encode('utf-8')):
+                session['user_id'] = user['id']  # Armazena o user_id na sessão
+                session['user_type'] = user['tipo']  # Armazena o tipo de usuário
                 return redirect(url_for('index'))
-            else:
+        else:
                 return "Senha inválida", 401
-        except Exception as e:
-            app.logger.error(f"Erro no login: {e}")
-            return "Ocorreu um erro no servidor", 500
-        finally:
-            conn.close()
+        # except Exception as e:
+        #     app.logger.error(f"Erro no login: {e}")
+        #     return "Ocorreu um erro no servidor", 500
+        # finally:
+        conn.close()
 
     return render_template('login.html')
 
