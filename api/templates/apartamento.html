@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ apartamento.nome }} - Detalhes</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        #map {
+            height: 400px;
+            width: 100%;
+        }
+    </style>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+</head>
+<body class="bg-gray-100">
+    {% include 'header.html' %}
+
+    <div class="container mx-auto p-6">
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <h1 class="text-3xl font-semibold mb-4">{{ apartamento.nome }}</h1>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <div id="map"></div>
+                </div>
+                <div>
+                    <p class="text-lg font-semibold mb-4">{{ apartamento.tipo }} - R$ {{ apartamento.preco }}</p>
+                    <p class="text-sm text-gray-700 mb-4">{{ apartamento.descricao }}</p>
+                    <h3 class="font-semibold text-lg">Fotos:</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+                        {% for foto in apartamento.fotos %}
+                            <img src="/{{ foto }}" alt="Imagem do apartamento" class="w-full h-48 object-cover rounded-md">
+                        {% endfor %}
+                    </div>
+                    
+                    {% if session['user_type'] == 'dono' %}
+                        <div class="mt-4">
+                            <a href="{{ url_for('editar_apartamento', id=apartamento.id) }}" class="text-blue-500 hover:underline">Editar Apartamento</a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        var map = L.map('map').setView([{{ apartamento.latitude }}, {{ apartamento.longitude }}], 13);
+        
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        L.marker([{{ apartamento.latitude }}, {{ apartamento.longitude }}]).addTo(map)
+            .bindPopup("<b>{{ apartamento.nome }}</b><br>{{ apartamento.descricao }}");
+    </script>
+</body>
+</html>

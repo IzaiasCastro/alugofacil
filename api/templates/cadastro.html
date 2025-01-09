@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro de Apartamento</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/dropzone@5.9.2/dist/dropzone.css" />
+    <script src="https://cdn.jsdelivr.net/npm/dropzone@5.9.2/dist/dropzone.min.js"></script>
+</head>
+<body class="bg-gray-100">
+    {% include 'header.html' %}
+    <div class="container mx-auto p-6">
+    <div class="bg-white p-8 rounded-lg shadow-lg w-full">
+        <h1 class="text-2xl font-bold text-center text-gray-700 mb-6">Cadastro de Imóvel</h1>
+
+        <form action="/cadastro" method="POST" enctype="multipart/form-data">
+            <!-- Nome do imóvel -->
+            <div class="grid grid-cols gap-4">
+                <div class="mb-4">
+                    <label for="nome" class="block text-sm font-medium text-gray-600">Nome:</label>
+                    <input type="text" id="nome" name="nome" class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                </div>
+            </div>
+            
+            <!-- Descrição -->
+            <div class="grid grid-cols gap-4">
+                <div class="mb-4">
+                    <label for="descricao" class="block text-sm font-medium text-gray-600">Descrição:</label>
+                    <input type="text" id="descricao" name="descricao" class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                </div>
+            </div>
+
+            <!-- Tipo de imóvel -->
+            <div class="mb-4">
+                <label for="tipo" class="block text-sm font-medium text-gray-600">Tipo de Imóvel:</label>
+                <select id="tipo" name="tipo" class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                    <option value="Apartamento">Apartamento</option>
+                    <option value="Casa">Casa</option>
+                    <option value="Comercial">Comercial</option>
+                </select>
+            </div>
+
+            <!-- Número de Quartos -->
+            <div class="mb-4">
+                <label for="quartos" class="block text-sm font-medium text-gray-600">Número de Quartos:</label>
+                <input type="number" id="quartos" name="quartos" min="1" max="10" value="1" class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+            </div>
+
+            <!-- Área -->
+            <div class="mb-4">
+                <label for="area" class="block text-sm font-medium text-gray-600">Área (m²):</label>
+                <input type="number" id="area" name="area" min="10" max="1000" value="50" class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+            </div>
+
+            <!-- Latitude e Longitude -->
+            <input type="hidden" id="latitude" name="latitude">
+            <input type="hidden" id="longitude" name="longitude">
+
+            <!-- Localização (Mapa) -->
+            <div class="mb-6">
+                <label for="descricao" class="block text-sm font-medium text-gray-600">Localização:</label>
+                <div id="map" style="height: 300px;"></div>
+            </div>
+
+            <!-- Preço (Slider) -->
+            <div class="mb-6">
+                <label for="preco" class="block text-sm font-medium text-gray-600">Preço (R$):</label>
+                <input type="range" id="preco" name="preco" value="1000" min="0" max="10000" step="100" class="w-full" oninput="updatePriceLabel(this.value)">
+                <span id="precoLabel" class="block text-sm font-semibold mt-2">R$ 1000</span>
+            </div>
+
+            <!-- Fotos do Imóvel -->
+            <div class="mb-6">
+                <label for="fotos" class="block text-sm font-medium text-gray-600">Fotos do Imóvel:</label>
+                <div class="dropzone" id="fotoUpload"></div>
+            </div>
+
+            <!-- Campo oculto para os caminhos das fotos -->
+            <input type="hidden" id="filePaths" name="filePaths" value="">
+
+            <!-- Botão de envio -->
+            <button type="submit" class="w-full bg-blue-500 text-white py-3 rounded-md hover:bg-blue-600 focus:outline-none">Cadastrar Imóvel</button>
+        </form>
+    </div>
+    </div>
+
+    <script>
+        var map;
+        var apartmentMarker;
+
+        // Função para obter a localização do usuário
+        function getLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function(position) {
+                    var latitude = position.coords.latitude;
+                    var longitude = position.coords.longitude;
+
+                    // Inicializa o mapa com a localização atual
+                    map = L.map('map').setView([latitude, longitude], 13);
+
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                    }).addTo(map);
+
+                    // Cria o marcador arrastável
+                    apartmentMarker = L.marker([latitude, longitude], { draggable: true }).addTo(map);
+
+                    // Atualiza os campos de latitude e longitude quando o marcador é arrastado
+                    apartmentMarker.on('dragend', function(event) {
+                        var latLng = event.target.getLatLng();
+                        document.getElementById('latitude').value = latLng.lat;
+                        document.getElementById('longitude').value = latLng.lng;
+                    });
+
+                    // Atualiza os campos de latitude e longitude quando o mapa é clicado
+                    map.on('click', function(e) {
+                        var lat = e.latlng.lat;
+                        var lng = e.latlng.lng;
+
+                        apartmentMarker.setLatLng([lat, lng]);
+
+                        document.getElementById('latitude').value = lat;
+                        document.getElementById('longitude').value = lng;
+                    });
+                });
+            } else {
+                alert("Geolocalização não é suportada neste navegador.");
+            }
+        }
+
+        // Chama a função para pegar a localização assim que a página carregar
+        window.onload = function() {
+            getLocation();
+        };
+
+        // Função para atualizar o valor do preço
+        function updatePriceLabel(value) {
+            document.getElementById('precoLabel').textContent = "R$ " + value;
+        }
+
+        // Configuração do Dropzone para upload de fotos
+        Dropzone.options.fotoUpload = {
+            url: '/upload',
+            paramName: 'file',
+            maxFilesize: 2, // Tamanho máximo (MB)
+            acceptedFiles: 'image/*', // Apenas imagens
+            dictDefaultMessage: 'Arraste suas fotos aqui ou clique para selecionar',
+            success: function (file, response) {
+                var filePathsInput = document.getElementById('filePaths');
+                if (response.file_path) {
+                    filePathsInput.value += response.file_path + ','; // Adiciona o caminho ao campo oculto
+                }
+            },
+            error: function (file, message) {
+                alert("Erro ao enviar arquivo: " + message);
+            }
+        };
+    </script>
+</body>
+</html>

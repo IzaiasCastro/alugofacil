@@ -1,0 +1,18 @@
+
+<div class="flex justify-center">
+    <img src="/static/img/logo.png" alt="Logo" class="w-40 h-40"> <!-- Logo aqui -->
+</div>
+<header class="shadow-md bg-blue-600">
+    <div class=" max-w-7xl mx-auto px-6 py-4 flex items-center justify-between flex-wrap">
+        <nav class="space-x-4 mt-0 sm:mt-0 sm:flex">
+            <a href="{{ url_for('index') }}" class="text-white hover:text-gray-300">Início</a>
+            {% if session.get('user_id') %}
+            <a href="{{ url_for('cadastro') }}" class="text-white hover:text-gray-300">Cadastrar Imóvel</a>
+            <a href="{{ url_for('logout') }}" class="text-white hover:text-gray-300">Sair</a>
+            {% else %}
+            <a href="{{ url_for('login') }}" class="text-white hover:text-gray-300">Login</a>
+            <a href="{{ url_for('registro') }}" class="text-white hover:text-gray-300">Cadastro</a>
+            {% endif %}
+        </nav>
+    </div>
+</header>

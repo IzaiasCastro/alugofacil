@@ -1,0 +1,27 @@
+<div class="p-4 bg-white rounded-lg shadow-md">
+    <h3 class="text-xl font-semibold mb-4">Filtrar Imóveis</h3>
+    <form method="GET" action="{{ url_for('index') }}">
+        <div class="mb-4">
+            <label for="preco" class="block text-sm font-medium text-gray-700">Preço</label>
+            <select id="preco" name="preco" class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
+                <option value="">Selecione</option>
+                <option value="baixo">Abaixo de R$ 500</option>
+                <option value="medio">Entre R$ 500 e R$ 1000</option>
+                <option value="alto">Acima de R$ 1000</option>
+            </select>
+        </div>
+        <div class="mb-4">
+            <label for="localizacao" class="block text-sm font-medium text-gray-700">Localização</label>
+            <input type="text" id="localizacao" name="localizacao" class="mt-1 block w-full p-2 border border-gray-300 rounded-md" placeholder="Digite a cidade ou bairro">
+        </div>
+        <div class="mb-4">
+            <label for="tipo" class="block text-sm font-medium text-gray-700">Tipo</label>
+            <select id="tipo" name="tipo" class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
+                <option value="">Selecione</option>
+                <option value="apartamento">Apartamento</option>
+                <option value="casa">Casa</option>
+            </select>
+        </div>
+        <button type="submit" class="w-full bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600">Aplicar Filtros</button>
+    </form>
+</div>

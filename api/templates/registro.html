@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+    <div class="flex justify-center items-center min-h-screen">
+        <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
+            <div class="flex justify-center">
+                <img src="../static/img/logo.png" alt="Logo" class="w-40 h-40"> <!-- Logo aqui -->
+            </div>
+            <h1 class="text-3xl font-semibold text-center text-gray-700 mb-6">Crie sua Conta</h1>
+            <form method="POST">
+                <div class="mb-4">
+                    <label for="nome" class="block text-sm font-medium text-gray-600">Nome:</label>
+                    <input type="text" name="nome" required class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+
+                <div class="mb-4">
+                    <label for="email" class="block text-sm font-medium text-gray-600">Email:</label>
+                    <input type="email" name="email" required class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+
+                <div class="mb-4">
+                    <label for="senha" class="block text-sm font-medium text-gray-600">Senha:</label>
+                    <input type="password" name="senha" required class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+
+                <div class="mb-4">
+                    <label for="tipo" class="block text-sm font-medium text-gray-600">Tipo de usuário:</label>
+                    <select name="tipo" required class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="cliente">Cliente</option>
+                        <option value="dono">Dono de Imóvel</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="w-full bg-blue-500 text-white py-3 rounded-md hover:bg-blue-600 focus:outline-none">Cadastrar</button>
+            </form>
+            <p class="mt-4 text-center text-sm text-gray-600">Já tem uma conta? <a href="/login" class="text-blue-500">Faça login</a></p>
+        </div>
+    </div>
+</body>
+</html>

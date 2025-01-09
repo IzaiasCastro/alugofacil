@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar {{ apartamento.nome }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/dropzone@5.9.3/dist/dropzone.css" />
+    <script src="https://cdn.jsdelivr.net/npm/dropzone@5.9.3/dist/dropzone.js"></script>
+    <style>
+        #map {
+            height: 400px;
+            width: 100%;
+        }
+        .dropzone .dz-preview { 
+            display: flex;
+            justify-content: space-between;
+        }
+        .photo-container {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .photo-container img {
+            max-width: 150px;
+            max-height: 150px;
+            border-radius: 5px;
+        }
+        .remove-btn {
+            position: absolute;
+            top: 0;
+            right: 0;
+            background-color: red;
+            color: white;
+            border: none;
+            padding: 5px;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    {% include 'header.html' %}
+
+    <div class="container mx-auto p-6">
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <h1 class="text-3xl font-semibold mb-4">Editar {{ apartamento.nome }}</h1>
+
+            <form method="POST" enctype="multipart/form-data">
+                <div class="mb-4">
+                    <label for="nome" class="block text-sm font-semibold">Nome</label>
+                    <input type="text" id="nome" name="nome" value="{{ apartamento.nome }}" class="w-full p-2 border border-gray-300 rounded-md" required>
+                </div>
+
+                <div class="mb-4">
+                    <label for="descricao" class="block text-sm font-semibold">Descrição</label>
+                    <textarea id="descricao" name="descricao" class="w-full p-2 border border-gray-300 rounded-md" required>{{ apartamento.descricao }}</textarea>
+                </div>
+
+                <div class="mb-4">
+                    <label for="quartos" class="block text-sm font-semibold">Número de Quartos</label>
+                    <input type="number" id="quartos" name="quartos" value="{{ apartamento.quartos }}" min="1" max="10" class="w-full p-2 border border-gray-300 rounded-md" required>
+                </div>
+
+                <div class="mb-4">
+                    <label for="area" class="block text-sm font-semibold">Área (m²)</label>
+                    <input type="number" id="area" name="area" value="{{ apartamento.area }}" min="10" max="1000" class="w-full p-2 border border-gray-300 rounded-md" required>
+                </div>
+
+                <div class="mb-4">
+                    <label for="tipo_imovel" class="block text-sm font-semibold">Tipo de Imóvel</label>
+                    <select id="tipo_imovel" name="tipo_imovel" class="w-full p-2 border border-gray-300 rounded-md" required>
+                        <option value="Apartamento" {% if apartamento.tipo_imovel == 'Apartamento' %}selected{% endif %}>Apartamento</option>
+                        <option value="Casa" {% if apartamento.tipo_imovel == 'Casa' %}selected{% endif %}>Casa</option>
+                        <option value="Comercial" {% if apartamento.tipo_imovel == 'Comercial' %}selected{% endif %}>Comercial</option>
+                    </select>
+                </div>
+
+                <!-- Ocultar Latitude e Longitude -->
+                <div class="mb-4 hidden">
+                    <label for="latitude" class="block text-sm font-semibold">Latitude</label>
+                    <input type="text" id="latitude" name="latitude" value="{{ apartamento.latitude }}" class="w-full p-2 border border-gray-300 rounded-md" required readonly>
+                </div>
+
+                <div class="mb-4 hidden">
+                    <label for="longitude" class="block text-sm font-semibold">Longitude</label>
+                    <input type="text" id="longitude" name="longitude" value="{{ apartamento.longitude }}" class="w-full p-2 border border-gray-300 rounded-md" required readonly>
+                </div>
+
+                <div class="mb-4">
+                    <label for="preco" class="block text-sm font-semibold">Preço (R$)</label>
+                    <input type="range" id="preco" name="preco" value="{{ apartamento.preco }}" min="0" max="10000" step="100" class="w-full" oninput="updatePriceLabel(this.value)">
+                    <span id="precoLabel" class="block text-sm font-semibold mt-2">R$ {{ apartamento.preco }}</span>
+                </div>
+
+                <!-- Mostrar as fotos existentes -->
+                <div class="mb-4">
+                    <label for="fotos" class="block text-sm font-semibold">Fotos</label>
+                    <div class="photo-container">
+                        {% for foto in apartamento.fotos.split(',') %}
+                            <div class="relative">
+                                <img src="/{{ foto }}" alt="Foto do apartamento" class="rounded-md">
+                                <button type="button" class="remove-btn" onclick="removePhoto('{{ foto }}')">X</button>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    <div class="dropzone" id="fotoUpload" action="/upload" method="POST" enctype="multipart/form-data"></div>
+                    <!-- Campo oculto para armazenar os caminhos das imagens -->
+                    <input type="hidden" name="fotos" id="fotos" value="{{ apartamento.fotos }}">
+                </div>
+
+                <h3 class="font-semibold text-lg mb-2">Localização no Mapa:</h3>
+                <div id="map"></div>
+
+                <div class="mb-4 mt-6">
+                    <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-md">Salvar Alterações</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        var map = L.map('map').setView([{{ apartamento.latitude }}, {{ apartamento.longitude }}], 13);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        var marker = L.marker([{{ apartamento.latitude }}, {{ apartamento.longitude }}]).addTo(map)
+            .bindPopup("<b>{{ apartamento.nome }}</b><br>{{ apartamento.descricao }}");
+
+        map.on('click', function(e) {
+            var lat = e.latlng.lat;
+            var lng = e.latlng.lng;
+            marker.setLatLng([lat, lng]);
+            document.getElementById('latitude').value = lat;
+            document.getElementById('longitude').value = lng;
+        });
+
+        function updatePriceLabel(value) {
+            document.getElementById('precoLabel').textContent = "R$ " + value;
+        }
+
+        Dropzone.options.fotoUpload = {
+            url: '/upload',
+            paramName: 'file',
+            maxFilesize: 2,
+            acceptedFiles: 'image/*',
+            dictDefaultMessage: 'Arraste suas fotos aqui ou clique para selecionar',
+            success: function (file, response) {
+                var filePathsInput = document.getElementById('fotos');
+                if (response.file_path) {
+                    var currentPaths = filePathsInput.value ? filePathsInput.value.split(',') : [];
+                    currentPaths.push(response.file_path);
+                    filePathsInput.value = currentPaths.join(',');
+                }
+            },
+            error: function (file, message) {
+                alert("Erro ao enviar arquivo: " + message);
+            }
+        };
+
+        // Função para remover foto
+        function removePhoto(foto) {
+            if (confirm("Tem certeza que deseja remover esta foto?")) {
+                var filePathsInput = document.getElementById('fotos');
+                var currentPaths = filePathsInput.value ? filePathsInput.value.split(',') : [];
+                var updatedPaths = currentPaths.filter(function(path) {
+                    return path !== foto;
+                });
+                filePathsInput.value = updatedPaths.join(',');
+
+                // Remover a foto da página
+                var photoContainer = event.target.closest('.relative');
+                photoContainer.remove();
+            }
+        }
+    </script>
+</body>
+</html>
