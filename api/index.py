@@ -82,7 +82,7 @@ def index():
 
     return render_template('index.html', apartamentos=apartamentos_formatados)
 
-@app.route('/login', methods=['POST'])
+@app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
         email = request.form.get('email')
