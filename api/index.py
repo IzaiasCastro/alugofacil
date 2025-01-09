@@ -205,20 +205,21 @@ def registro():
         senha = request.form['senha']
         tipo = request.form['tipo']
 
-        # Hash a senha
-        hashed_password = bcrypt.hashpw(senha.encode('utf-8'), bcrypt.gensalt())
+        # Hash da senha (convertido para string)
+        hashed_password = bcrypt.hashpw(senha.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
 
         # Conexão com o banco
         conn = get_db_connection()
         cursor = conn.cursor()  
 
-        cursor.execute("INSERT INTO usuarios(nome, email, senha, tipo) VALUES (%s, %s, %s, %s)", 
-                    (nome, email, hashed_password, tipo))
+        cursor.execute("INSERT INTO usuarios (nome, email, senha, tipo) VALUES (%s, %s, %s, %s)", 
+                       (nome, email, hashed_password, tipo))
         conn.commit()
         cursor.close()
 
         return redirect(url_for('login'))
     return render_template('registro.html')
+
 
 
 @app.route('/apartamento/<int:id>', methods=['GET'])
