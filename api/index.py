@@ -228,13 +228,13 @@ def apartamento(id):
     # Verifica se o apartamento foi encontrado
     if apartamento:
         apartamento_formatado = {
-            "nome": apartamento['nome'],  # Acessa pelos nomes das colunas
-            "descricao": apartamento['descricao'],
-            "latitude": apartamento['latitude'],
-            "longitude": apartamento['longitude'],
-            "fotos": apartamento['fotos'].split(',') if apartamento['fotos'] else [],
-            "preco": apartamento['preco'],
-            "tipo": apartamento['tipo_imovel'],
+            "nome": apartamento[0],  # Acessa pelos nomes das colunas
+            "descricao": apartamento[1],
+            "latitude": apartamento[2],
+            "longitude": apartamento[3],
+            "fotos": apartamento[4].split(',') if apartamento[4] else [],
+            "preco": apartamento[5],
+            "tipo": apartamento[6],
             "id": id
         }
         return render_template('apartamento.html', apartamento=apartamento_formatado)
