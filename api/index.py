@@ -3,6 +3,8 @@ from flask import Flask, render_template, request, redirect, url_for, session
 import bcrypt
 from werkzeug.utils import secure_filename
 import psycopg2
+from psycopg2.extras import DictCursor
+
 import os
 
 # Exemplo de conexão com o banco de dados
@@ -80,7 +82,7 @@ def index():
 
     return render_template('index.html', apartamentos=apartamentos_formatados)
 
-@app.route('/login', methods=['GET', 'POST'])
+@app.route('/login', methods=['POST'])
 def login():
     if request.method == 'POST':
         email = request.form.get('email')
@@ -89,31 +91,27 @@ def login():
         if not email or not senha:
             return "Por favor, preencha todos os campos.", 400
 
-        # Conexão com o banco
         conn = get_db_connection()
-        # try:
-        with conn.cursor() as cursor:
-                # Consulta o usuário pelo email
+        try:
+            with conn.cursor(cursor_factory=DictCursor) as cursor:
                 cursor.execute("SELECT id, senha, tipo FROM usuarios WHERE email = %s", (email,))
-                user = cursor.fetchone()  # Retorna um dicionário ou None
+                user = cursor.fetchone()
 
-            # Verifica se o usuário foi encontrado
-        if user is None:
+            if not user:
                 return "Usuário não encontrado", 404
 
-            # Verifica a senha
-        hashed_password = user['senha']
-        if bcrypt.checkpw(senha.encode('utf-8'), hashed_password.encode('utf-8')):
-                session['user_id'] = user['id']  # Armazena o user_id na sessão
-                session['user_type'] = user['tipo']  # Armazena o tipo de usuário
+            hashed_password = user['senha']
+            if bcrypt.checkpw(senha.encode('utf-8'), hashed_password.encode('utf-8')):
+                session['user_id'] = user['id']
+                session['user_type'] = user['tipo']
                 return redirect(url_for('index'))
-        else:
+            else:
                 return "Senha inválida", 401
-        # except Exception as e:
-        #     app.logger.error(f"Erro no login: {e}")
-        #     return "Ocorreu um erro no servidor", 500
-        # finally:
-        conn.close()
+        except Exception as e:
+            app.logger.error(f"Erro no login: {e}")
+            return "Ocorreu um erro no servidor", 500
+        finally:
+            conn.close()
 
     return render_template('login.html')
 
