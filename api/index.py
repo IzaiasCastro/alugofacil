@@ -4,6 +4,8 @@ import bcrypt
 from werkzeug.utils import secure_filename
 import psycopg2
 from psycopg2.extras import DictCursor
+import binascii
+
 
 import os
 
@@ -99,14 +101,16 @@ def login():
 
         if not user:
                 return "Usuário não encontrado", 404
+        
+        # Converte o hash de hexadecimal para string
+        hashed_password = binascii.unhexlify(user['senha']).decode('utf-8')
 
-        hashed_password = user['senha']
         if bcrypt.checkpw(senha.encode('utf-8'), hashed_password.encode('utf-8')):
-                session['user_id'] = user['id']
-                session['user_type'] = user['tipo']
-                return redirect(url_for('index'))
+            session['user_id'] = user['id']
+            session['user_type'] = user['tipo']
+            return redirect(url_for('index'))
         else:
-                return "Senha inválida", 401
+            return "Senha inválida", 401
         # except Exception as e:
         #     app.logger.error(f"Erro no login: {e}")
         #     return "Ocorreu um erro no servidor", 500
