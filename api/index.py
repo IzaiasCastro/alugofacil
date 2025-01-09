@@ -100,10 +100,10 @@ def login():
         if user is None:
                 return "Usuário não encontrado", 404
             # Verifica a senha
-        hashed_password = user['senha']
+        hashed_password = user[1]
         if bcrypt.checkpw(senha.encode('utf-8'), hashed_password.encode('utf-8')):
-                session['user_id'] = user['id']  # Armazena o user_id na sessão
-                session['user_type'] = user['tipo']  # Armazena o tipo de usuário
+                session['user_id'] = user[0]  # Armazena o user_id na sessão
+                session['user_type'] = user[2]  # Armazena o tipo de usuário
                 return redirect(url_for('index'))
         else:
                 return "Senha inválida", 401
