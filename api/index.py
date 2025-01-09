@@ -104,8 +104,8 @@ def login():
             # Verifica a senha
             hashed_password = user['senha']
             if bcrypt.checkpw(senha.encode('utf-8'), hashed_password.encode('utf-8')):
-                session['user_id'] = user['id']  # Armazena o user_id na sessão
-                session['user_type'] = user['tipo']  # Armazena o tipo de usuário
+                # session['user_id'] = user['id']  # Armazena o user_id na sessão
+                # session['user_type'] = user['tipo']  # Armazena o tipo de usuário
                 return redirect(url_for('index'))
             else:
                 return "Senha inválida", 401
