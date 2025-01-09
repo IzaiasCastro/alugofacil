@@ -66,14 +66,14 @@ def index():
     # Formata os apartamentos
     apartamentos_formatados = [
         {
-            "id": ap["id"],
-            "nome": ap["nome"],
-            "descricao": ap["descricao"],
-            "latitude": ap["latitude"],
-            "longitude": ap["longitude"],
-            "fotos": ap["fotos"].split(',') if ap["fotos"] else [],
-            "preco": ap["preco"],
-            "tipo": ap["tipo_imovel"]
+            "id": ap[0],
+            "nome": ap[1],
+            "descricao": ap[2],
+            "latitude": ap[3],
+            "longitude": ap[4],
+            "fotos": ap[5].split(',') if ap[5] else [],
+            "preco": ap[6],
+            "tipo": ap[7]
         }
         for ap in apartamentos
     ]
