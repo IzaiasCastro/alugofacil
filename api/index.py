@@ -12,7 +12,6 @@ SUPABASE_URL = os.getenv("SUPABASE_URL_FILE", "https://riqzhrzpoxhubexqeqkz.supa
 SUPABASE_ANON_KEY = os.getenv("SUPABASE_ANON_KEY", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJpcXpocnpwb3hodWJleHFlcWt6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzY0MzEyNjMsImV4cCI6MjA1MjAwNzI2M30.fkxfzhLRZyMtACZaHBfCuVG-Sp_wxd8cos9JytUcd64")
 
 supabase = create_client(SUPABASE_URL, SUPABASE_ANON_KEY)
-print(supabase)
 
 # Exemplo de conexão com o banco de dados
 DATABASE_URL = os.getenv("DATABASE_URL")
@@ -26,14 +25,14 @@ def get_db_connection():
 app = Flask(__name__)
 
 
-# Configurações do upload
-UPLOAD_FOLDER = 'static/uploads'
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+# # Configurações do upload
+# UPLOAD_FOLDER = 'static/uploads'
+# ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+# app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-# Cria o diretório de upload, caso não exista
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+# # Cria o diretório de upload, caso não exista
+# os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 # Configura a chave secreta do Flask
 app.secret_key = SECRET_KEY
