@@ -2,3 +2,4 @@ Flask==3.0.3
 psycopg2-binary
 bcrypt
 werkzeug
+supabase

@@ -4,6 +4,15 @@ import bcrypt
 from werkzeug.utils import secure_filename
 import psycopg2
 import os
+from flask import jsonify
+from supabase import create_client
+
+# Configurações do Supabase
+SUPABASE_URL = os.getenv("SUPABASE_URL_FILE", "https://riqzhrzpoxhubexqeqkz.supabase.co")
+SUPABASE_ANON_KEY = os.getenv("SUPABASE_ANON_KEY", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJpcXpocnpwb3hodWJleHFlcWt6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzY0MzEyNjMsImV4cCI6MjA1MjAwNzI2M30.fkxfzhLRZyMtACZaHBfCuVG-Sp_wxd8cos9JytUcd64")
+
+supabase = create_client(SUPABASE_URL, SUPABASE_ANON_KEY)
+print(supabase)
 
 # Exemplo de conexão com o banco de dados
 DATABASE_URL = os.getenv("DATABASE_URL")
@@ -17,12 +26,22 @@ def get_db_connection():
 app = Flask(__name__)
 
 
+# Configurações do upload
+UPLOAD_FOLDER = 'static/uploads'
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+# Cria o diretório de upload, caso não exista
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+# Configura a chave secreta do Flask
+app.secret_key = SECRET_KEY
+
 def allowed_file(filename):
     """Verifica se o arquivo possui uma extensão permitida."""
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-# Chave secreta para sessões
-app.secret_key = 'secretkey'
 
 
 @app.route('/')
@@ -126,18 +145,27 @@ def cadastro():
             file_paths = request.form.get('filePaths', '')  # Pega os caminhos das fotos ou vazio
             user_id = session['user_id']
 
+            # Validações
+            if not nome or not descricao or not latitude or not longitude:
+                return "Todos os campos são obrigatórios.", 400
+            
+            # Converte valores numéricos
+            try:
+                latitude = float(latitude)
+                longitude = float(longitude)
+            except ValueError:
+                return "Latitude e longitude devem ser números.", 400
+
             # Conexão com o banco
             conn = get_db_connection()
             cursor = conn.cursor()
 
-
-            cur = cursor
-            cur.execute("""
+            cursor.execute("""
                 INSERT INTO apartamentos(nome, descricao, latitude, longitude, user_id, fotos) 
                 VALUES (%s, %s, %s, %s, %s, %s)
             """, (nome, descricao, latitude, longitude, user_id, file_paths))
             conn.commit()
-            cur.close()
+            cursor.close()
 
             return redirect(url_for('index'))
         except Exception as e:
@@ -299,18 +327,62 @@ def editar_apartamento(id):
 
     return render_template('editar_apartamento.html', apartamento=apartamento_formatado)
 
+
+def upload_to_supabase(bucket_name, file_path, file_data):
+    """
+    Faz upload de um arquivo para o Supabase Storage.
     
+    :param bucket_name: Nome do bucket no Supabase
+    :param file_path: Caminho onde o arquivo será salvo (ex: 'imagens/meuarquivo.jpg')
+    :param file_data: Dados do arquivo (em bytes)
+    :return: URL pública do arquivo ou erro
+    """
+    try:
+        # Faz o upload do arquivo
+        response = supabase.storage.from_(bucket_name).upload(file_path, file_data)
+
+        if response.get("data"):
+            # Obtém a URL pública
+            public_url = supabase.storage.from_(bucket_name).get_public_url(file_path)
+            return {"success": True, "url": public_url.get("publicURL")}
+        else:
+            return {"success": False, "error": response.get("error")}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
 
 @app.route('/upload', methods=['POST'])
 def upload():
-    # Verifica se o usuário está logado e é do tipo "dono"
     if 'user_id' not in session or session['user_type'] != 'dono':
-        return "Usuário não autorizado", 403
+        return jsonify({"error": "Usuário não autorizado"}), 403
 
-    
+    if 'file' not in request.files:
+        return jsonify({"error": "Nenhum arquivo enviado"}), 400
 
-    return "Arquivo não permitido", 400
-    
+    file = request.files['file']
+
+    if file.filename == '':
+        return jsonify({"error": "Nenhum arquivo selecionado"}), 400
+
+    if file and allowed_file(file.filename):
+        try:
+            # Define o caminho do arquivo no bucket
+            filename = secure_filename(file.filename)
+            file_path = f"uploads/{filename}"
+
+            # Faz o upload para o Supabase
+            result = upload_to_supabase("apartamentos", file_path, file.read())
+
+            if result["success"]:
+                return jsonify({"file_url": result["url"]}), 200
+            else:
+                return jsonify({"error": result["error"]}), 500
+        except Exception as e:
+            return jsonify({"error": str(e)}), 500
+
+    return jsonify({"error": "Arquivo não permitido"}), 400
+
+
 
 
 @app.route('/about')
