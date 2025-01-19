@@ -26,13 +26,13 @@ app = Flask(__name__)
 
 
 # Configurações do upload
-UPLOAD_FOLDER = 'static/uploads'
+# UPLOAD_FOLDER = 'static/uploads'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+# app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-# Cria o diretório de upload, caso não exista
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+# # Cria o diretório de upload, caso não exista
+# os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 def allowed_file(filename):
     """Verifica se o arquivo possui uma extensão permitida."""
@@ -365,7 +365,7 @@ def upload():
             filename = secure_filename(file.filename)
             file_path = f"uploads/{filename}"
 
-            # Faz o upload para o Supabase
+            # Faz o upload diretamente para o Supabase
             result = upload_to_supabase("apartamentos", file_path, file.read())
 
             if result["success"]:
@@ -376,7 +376,6 @@ def upload():
             return jsonify({"error": str(e)}), 500
 
     return jsonify({"error": "Arquivo não permitido"}), 400
-
 
 
 
