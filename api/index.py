@@ -305,10 +305,15 @@ def upload_to_supabase(bucket_name, file_path, file_data):
         logging.info(f"Response do upload: {response}")  # Loga a resposta
 
 
-        if response.get("data"):
-            # Obtém a URL pública
-            public_url = supabase.storage.from_(bucket_name).get_public_url(file_path)
-            return {"success": True, "url": public_url.get("publicURL")}
+         # Verifica se o upload foi bem-sucedido
+        if response:
+            # Obtém o caminho completo do arquivo
+            full_path = response.full_path
+            
+            # Obtém a URL pública do arquivo
+            public_url = supabase.storage.from_(bucket_name).get_public_url(full_path)
+            print(f"URL pública do arquivo: {public_url['publicURL']}")  # Exibe a URL pública
+            return {"success": True, "url": public_url['publicURL']}
         else:
             return {"success": False, "error": response.get("error")}
     except Exception as e:
