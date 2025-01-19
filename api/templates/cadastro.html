@@ -141,7 +141,6 @@
             document.getElementById('precoLabel').textContent = "R$ " + value;
         }
 
-        // Configuração do Dropzone para upload de fotos
         Dropzone.options.fotoUpload = {
             url: '/upload',
             paramName: 'file',
@@ -149,16 +148,21 @@
             acceptedFiles: 'image/*', // Apenas imagens
             dictDefaultMessage: 'Arraste suas fotos aqui ou clique para selecionar',
             success: function (file, response) {
-                console.log('teste:', response);
-                var filePathsInput = document.getElementById('filePaths');
-                if (response.file_path) {
-                    filePathsInput.value += response.file_path + ','; // Adiciona o caminho ao campo oculto
+                console.log("Resposta recebida do backend: ", response);  // Loga toda a resposta
+
+                // Verifica se a resposta é um objeto e se contém a URL
+                if (response && typeof response === 'object' && response.url) {
+                    var filePathsInput = document.getElementById('filePaths');
+                    filePathsInput.value += response.url + ',';  // Adiciona a URL ao campo oculto
+                } else {
+                    console.error("A resposta do backend não contém a URL esperada.");
                 }
             },
             error: function (file, message) {
-                alert("Erro ao enviar arquivo: " + message);
+                alert("Erro ao enviar arquivo: " + message);  // Exibe uma mensagem de erro
             }
         };
+
     </script>
 </body>
 </html>
