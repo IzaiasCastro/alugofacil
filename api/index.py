@@ -25,22 +25,18 @@ def get_db_connection():
 app = Flask(__name__)
 
 
-# # Configurações do upload
-# UPLOAD_FOLDER = 'static/uploads'
-# ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+# Configurações do upload
+UPLOAD_FOLDER = 'static/uploads'
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
-# app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-# # Cria o diretório de upload, caso não exista
-# os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-
-# Configura a chave secreta do Flask
-app.secret_key = SECRET_KEY
+# Cria o diretório de upload, caso não exista
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 def allowed_file(filename):
     """Verifica se o arquivo possui uma extensão permitida."""
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
 
 
 @app.route('/')
