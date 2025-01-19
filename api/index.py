@@ -287,5 +287,60 @@ def editar_apartamento(id):
 
     return render_template('editar_apartamento.html', apartamento=apartamento)
 
+def upload_to_supabase(bucket_name, file_path, file_data):
+    """
+    Faz upload de um arquivo para o Supabase Storage.
+    
+    :param bucket_name: Nome do bucket no Supabase
+    :param file_path: Caminho onde o arquivo será salvo (ex: 'imagens/meuarquivo.jpg')
+    :param file_data: Dados do arquivo (em bytes)
+    :return: URL pública do arquivo ou erro
+    """
+    try:
+        # Faz o upload do arquivo
+        response = supabase.storage.from_(bucket_name).upload(file_path, file_data)
+
+        if response.get("data"):
+            # Obtém a URL pública
+            public_url = supabase.storage.from_(bucket_name).get_public_url(file_path)
+            return {"success": True, "url": public_url.get("publicURL")}
+        else:
+            return {"success": False, "error": response.get("error")}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+
+@app.route('/upload', methods=['POST'])
+def upload():
+    if 'user_id' not in session or session['user_type'] != 'dono':
+        return jsonify({"error": "Usuário não autorizado"}), 403
+
+    if 'file' not in request.files:
+        return jsonify({"error": "Nenhum arquivo enviado"}), 400
+
+    file = request.files['file']
+
+    if file.filename == '':
+        return jsonify({"error": "Nenhum arquivo selecionado"}), 400
+
+    if file and allowed_file(file.filename):
+        try:
+            # Define o caminho do arquivo no bucket
+            filename = secure_filename(file.filename)
+            file_path = f"uploads/{filename}"
+
+            # Faz o upload diretamente para o Supabase
+            result = upload_to_supabase("apartamentos", file_path, file.read())
+
+            if result["success"]:
+                return jsonify({"file_url": result["url"]}), 200
+            else:
+                return jsonify({"error": result["error"]}), 500
+        except Exception as e:
+            return jsonify({"error": str(e)}), 500
+
+    return jsonify({"error": "Arquivo não permitido"}), 400
+
+
 if __name__ == '__main__':
     app.run(debug=True)
