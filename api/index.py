@@ -5,6 +5,8 @@ from werkzeug.utils import secure_filename
 import psycopg2
 from flask import jsonify
 from supabase import create_client
+import logging
+
 
 # Configurações do Supabase
 SUPABASE_URL = os.getenv("SUPABASE_URL_FILE", "https://riqzhrzpoxhubexqeqkz.supabase.co")
@@ -299,6 +301,9 @@ def upload_to_supabase(bucket_name, file_path, file_data):
     try:
         # Faz o upload do arquivo
         response = supabase.storage.from_(bucket_name).upload(file_path, file_data)
+        print(f"Response do upload: {response}")  # Imprime no terminal
+        logging.info(f"Response do upload: {response}")  # Loga a resposta
+
 
         if response.get("data"):
             # Obtém a URL pública
