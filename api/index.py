@@ -3,7 +3,6 @@ from flask import Flask, render_template, request, redirect, url_for, session
 import bcrypt
 from werkzeug.utils import secure_filename
 import psycopg2
-import os
 from flask import jsonify
 from supabase import create_client
 
@@ -17,22 +16,15 @@ supabase = create_client(SUPABASE_URL, SUPABASE_ANON_KEY)
 DATABASE_URL = os.getenv("DATABASE_URL")
 SECRET_KEY = os.getenv("SECRET_KEY", "defaultsecretkey")  # Define um valor padrão para evitar erros
 
-
 def get_db_connection():
     """Retorna uma conexão ao banco de dados Supabase."""
     return psycopg2.connect(DATABASE_URL)
 
 app = Flask(__name__)
-
+app.config['SECRET_KEY'] = SECRET_KEY  # Garante que o SECRET_KEY seja configurado corretamente
 
 # Configurações do upload
-# UPLOAD_FOLDER = 'static/uploads'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
-
-# app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-
-# # Cria o diretório de upload, caso não exista
-# os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 def allowed_file(filename):
     """Verifica se o arquivo possui uma extensão permitida."""
@@ -103,26 +95,24 @@ def login():
             return "Por favor, preencha todos os campos.", 400
         # Conexão com o banco
         conn = get_db_connection()
-        # try:
         with conn.cursor() as cursor:
-                # Consulta o usuário pelo email
-                cursor.execute("SELECT id, senha, tipo FROM usuarios WHERE email = %s", (email,))
-                user = cursor.fetchone()  # Retorna um dicionário ou None
-            # Verifica se o usuário foi encontrado
+            # Consulta o usuário pelo email
+            cursor.execute("SELECT id, senha, tipo FROM usuarios WHERE email = %s", (email,))
+            user = cursor.fetchone()  # Retorna um dicionário ou None
+
+        # Verifica se o usuário foi encontrado
         if user is None:
-                return "Usuário não encontrado", 404
-            # Verifica a senha
+            return "Usuário não encontrado", 404
+
+        # Verifica a senha
         hashed_password = user[1]
         if bcrypt.checkpw(senha.encode('utf-8'), hashed_password.encode('utf-8')):
-                session['user_id'] = user[0]  # Armazena o user_id na sessão
-                session['user_type'] = user[2]  # Armazena o tipo de usuário
-                return redirect(url_for('index'))
+            session['user_id'] = user[0]  # Armazena o user_id na sessão
+            session['user_type'] = user[2]  # Armazena o tipo de usuário
+            return redirect(url_for('index'))
         else:
-                return "Senha inválida", 401
-        # except Exception as e:
-            # app.logger.error(f"Erro no login: {e}")
-            # return "Ocorreu um erro no servidor", 500
-        # finally:
+            return "Senha inválida", 401
+
         conn.close()
     return render_template('login.html')
 
@@ -168,7 +158,6 @@ def cadastro():
 
     return render_template('cadastro.html')
 
-
 @app.route('/logout')
 def logout():
     # Remove o user_id da sessão para deslogar o usuário
@@ -176,14 +165,11 @@ def logout():
     session.pop('user_type', None)
     return redirect(url_for('index'))
 
-
 @app.route('/meus_apartamentos', methods=['GET'])
 def meus_apartamentos():
-    # Verifica se o usuário está logado e é do tipo "dono"
     if 'user_id' not in session or session['user_type'] != 'dono':
         return redirect(url_for('login'))
 
-    # Obtém o user_id da sessão
     user_id = session['user_id']
 
     # Conexão com o banco
@@ -194,7 +180,6 @@ def meus_apartamentos():
     apartamentos = cursor.fetchall()
     conn.close()
 
-    # Formatação dos apartamentos
     apartamentos_formatados = [
         {
             "id": ap[0],
@@ -236,7 +221,6 @@ def registro():
     return render_template('registro.html')
 
 
-
 @app.route('/apartamento/<int:id>', methods=['GET'])
 def apartamento(id):
     # Conexão com o banco
@@ -248,10 +232,9 @@ def apartamento(id):
     apartamento = cursor.fetchone()
     conn.close()
 
-    # Verifica se o apartamento foi encontrado
     if apartamento:
         apartamento_formatado = {
-            "nome": apartamento[0],  # Acessa pelos nomes das colunas
+            "nome": apartamento[0],
             "descricao": apartamento[1],
             "latitude": apartamento[2],
             "longitude": apartamento[3],
@@ -264,24 +247,19 @@ def apartamento(id):
     else:
         return "Apartamento não encontrado", 404
 
-    
 
 @app.route('/apartamento/editar/<int:id>', methods=['GET', 'POST'])
 def editar_apartamento(id):
-    # Verifica se o usuário está logado e é do tipo "dono"
     if 'user_id' not in session or session['user_type'] != 'dono':
         return redirect(url_for('login'))
 
-    # Conexão com o banco
     conn = get_db_connection()
     cursor = conn.cursor()
 
-    # Busca os dados do apartamento pelo ID
     cursor.execute("SELECT nome, descricao, latitude, longitude, fotos, preco, tipo_imovel FROM apartamentos WHERE id = %s", [id])
     apartamento = cursor.fetchone()
     conn.close()
 
-    # Se o apartamento não existe, retorna erro
     if not apartamento:
         return "Apartamento não encontrado", 404
 
@@ -292,9 +270,8 @@ def editar_apartamento(id):
         longitude = request.form['longitude']
         preco = request.form['preco']
         tipo_imovel = request.form['tipo_imovel']
-        fotos = request.form['fotos']  # Imagens podem ser atualizadas ou mantidas
+        fotos = request.form['fotos']  # Imagens podem ser atualizadas ou não
 
-        # Atualiza as informações no banco de dados
         conn = get_db_connection()
         cursor = conn.cursor()
 
@@ -306,82 +283,9 @@ def editar_apartamento(id):
         conn.commit()
         conn.close()
 
-        return redirect(url_for('apartamento', id=id))  # Redireciona para a página de detalhes do apartamento
+        return redirect(url_for('apartamento', id=id))
 
-    # Caso seja um GET, preenche o formulário com as informações atuais
-    apartamento_formatado = {
-        "id": id,
-        "nome": apartamento['nome'],           # Acessa os valores pelo nome das colunas
-        "descricao": apartamento['descricao'],
-        "latitude": apartamento['latitude'],
-        "longitude": apartamento['longitude'],
-        "fotos": apartamento['fotos'],
-        "preco": apartamento['preco'],
-        "tipo_imovel": apartamento['tipo_imovel']
-    }
-
-    return render_template('editar_apartamento.html', apartamento=apartamento_formatado)
-
-
-def upload_to_supabase(bucket_name, file_path, file_data):
-    """
-    Faz upload de um arquivo para o Supabase Storage.
-    
-    :param bucket_name: Nome do bucket no Supabase
-    :param file_path: Caminho onde o arquivo será salvo (ex: 'imagens/meuarquivo.jpg')
-    :param file_data: Dados do arquivo (em bytes)
-    :return: URL pública do arquivo ou erro
-    """
-    try:
-        # Faz o upload do arquivo
-        response = supabase.storage.from_(bucket_name).upload(file_path, file_data)
-
-        if response.get("data"):
-            # Obtém a URL pública
-            public_url = supabase.storage.from_(bucket_name).get_public_url(file_path)
-            return {"success": True, "url": public_url.get("publicURL")}
-        else:
-            return {"success": False, "error": response.get("error")}
-    except Exception as e:
-        return {"success": False, "error": str(e)}
-
-
-@app.route('/upload', methods=['POST'])
-def upload():
-    if 'user_id' not in session or session['user_type'] != 'dono':
-        return jsonify({"error": "Usuário não autorizado"}), 403
-
-    if 'file' not in request.files:
-        return jsonify({"error": "Nenhum arquivo enviado"}), 400
-
-    file = request.files['file']
-
-    if file.filename == '':
-        return jsonify({"error": "Nenhum arquivo selecionado"}), 400
-
-    if file and allowed_file(file.filename):
-        try:
-            # Define o caminho do arquivo no bucket
-            filename = secure_filename(file.filename)
-            file_path = f"uploads/{filename}"
-
-            # Faz o upload diretamente para o Supabase
-            result = upload_to_supabase("apartamentos", file_path, file.read())
-
-            if result["success"]:
-                return jsonify({"file_url": result["url"]}), 200
-            else:
-                return jsonify({"error": result["error"]}), 500
-        except Exception as e:
-            return jsonify({"error": str(e)}), 500
-
-    return jsonify({"error": "Arquivo não permitido"}), 400
-
-
-
-@app.route('/about')
-def about():
-    return 'About'
+    return render_template('editar_apartamento.html', apartamento=apartamento)
 
 if __name__ == '__main__':
     app.run(debug=True)
