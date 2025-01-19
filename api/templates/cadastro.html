@@ -149,6 +149,7 @@
             acceptedFiles: 'image/*', // Apenas imagens
             dictDefaultMessage: 'Arraste suas fotos aqui ou clique para selecionar',
             success: function (file, response) {
+                console.log('teste:', response);
                 var filePathsInput = document.getElementById('filePaths');
                 if (response.file_path) {
                     filePathsInput.value += response.file_path + ','; // Adiciona o caminho ao campo oculto
