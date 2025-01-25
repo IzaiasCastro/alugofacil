@@ -25,10 +25,13 @@
         </div>
         {% endif %}
         
-        {% include 'filtro.html' %}
+        <div class="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+            {% include 'filtro.html' %}
+            
+            <div id="map"></div>
+        </div>
 
 
-        <div id="map"></div>
 
          <!-- Exibição dos Apartamentos Encontrados -->
         <div class="mt-6">
@@ -102,5 +105,6 @@
     });
         </script>
     </div>
+    {% include 'footer.html' %}
 </body>
 </html>
