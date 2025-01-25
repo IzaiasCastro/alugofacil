@@ -127,6 +127,8 @@ def cadastro():
     if request.method == 'POST':
         try:
             nome = request.form['nome']
+            preco = request.form['preco']
+            tipo_imovel = request.form['tipo_imovel']
             descricao = request.form['descricao']
             latitude = request.form['latitude']
             longitude = request.form['longitude']
@@ -149,9 +151,9 @@ def cadastro():
             cursor = conn.cursor()
 
             cursor.execute("""
-                INSERT INTO apartamentos(nome, descricao, latitude, longitude, user_id, fotos) 
-                VALUES (%s, %s, %s, %s, %s, %s)
-            """, (nome, descricao, latitude, longitude, user_id, file_paths))
+                INSERT INTO apartamentos(nome, descricao, latitude, longitude, user_id, fotos, preco, tipo_imovel) 
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+            """, (nome, descricao, latitude, longitude, user_id, file_paths, preco, tipo_imovel))
             conn.commit()
             cursor.close()
 
