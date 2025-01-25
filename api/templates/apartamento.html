@@ -38,13 +38,13 @@
                     
                     {% if session['user_type'] == 'dono' %}
                         <div class="mt-4 flex gap-4">
-                            <a href="{{ url_for('editar_apartamento', id=apartamento.id) }}" class="text-blue-500 hover:underline">Editar Apartamento</a>
-                            <form method="POST" action="{{ url_for('publicar_apartamento', id=apartamento.id) }}">
+                            <a href="{{ url_for('editar_apartamento', id=apartamento.id) }}" class="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600">Editar Apartamento</a>
+                            <!-- <form method="POST" action="{{ url_for('publicar_apartamento', id=apartamento.id) }}">
                                 <button type="submit" 
                                         class="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600">
                                     Publicar Apartamento
                                 </button>
-                            </form>
+                            </form> -->
                             <form method="POST" action="{{ url_for('excluir_apartamento', id=apartamento.id) }}" 
                                   onsubmit="return confirm('Tem certeza que deseja excluir este apartamento?');">
                                 <button type="submit" 
