@@ -139,6 +139,13 @@ def cadastro():
             if not nome or not descricao or not latitude or not longitude:
                 return "Todos os campos são obrigatórios.", 400
             
+            # Converte preço para float
+            try:
+                preco = preco.replace("R$", "").replace(".", "").replace(",", ".").strip()
+                preco = float(preco)
+            except ValueError:
+                return "O preço deve ser um valor numérico válido.", 400
+            
             # Converte valores numéricos
             try:
                 latitude = float(latitude)
