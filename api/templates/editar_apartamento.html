@@ -129,7 +129,7 @@
             success: function (file, response) {
                 if (response && typeof response === 'object' && response.file_url) {
                     var filePathsInput = document.getElementById('filePaths');
-                    filePathsInput.value += response.file_url.full_path + ',';
+                    filePathsInput.value += 'https://riqzhrzpoxhubexqeqkz.supabase.co/storage/v1/object/public/' + response.file_url.full_path + ',';
                 }
             },
             error: function (file, message) {
