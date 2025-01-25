@@ -6,6 +6,7 @@ import psycopg2
 from flask import jsonify
 from supabase import create_client
 import logging
+from datetime import datetime
 
 
 # Configurações do Supabase
@@ -327,8 +328,12 @@ def upload():
 
     if file and allowed_file(file.filename):
         try:
+            # Nome único com data e hora
+            timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+            unique_filename = f"{timestamp}_{secure_filename(file.filename)}"
+
             # Define o caminho do arquivo no bucket
-            filename = secure_filename(file.filename)
+            filename = secure_filename(unique_filename)
             file_path = f"uploads/{filename}"
 
             # Faz o upload diretamente para o Supabase
