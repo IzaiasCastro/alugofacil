@@ -261,36 +261,74 @@ def editar_apartamento(id):
     conn = get_db_connection()
     cursor = conn.cursor()
 
-    cursor.execute("SELECT nome, descricao, latitude, longitude, fotos, preco, tipo_imovel FROM apartamentos WHERE id = %s", [id])
+    # Busca os dados do apartamento
+    cursor.execute("""
+        SELECT nome, descricao, latitude, longitude, fotos, preco, tipo_imovel, quartos, area 
+        FROM apartamentos 
+        WHERE id = %s
+    """, [id])
     apartamento = cursor.fetchone()
-    conn.close()
 
     if not apartamento:
+        conn.close()
         return "Apartamento não encontrado", 404
 
+    # Mapeia os dados do apartamento para um dicionário
+    imovel = {
+        'nome': apartamento[0],
+        'descricao': apartamento[1],
+        'latitude': apartamento[2],
+        'longitude': apartamento[3],
+        'fotos': apartamento[4],
+        'preco': apartamento[5],
+        'tipo': apartamento[6],
+        'quartos': apartamento[7],
+        'area': apartamento[8]
+    }
+
     if request.method == 'POST':
-        nome = request.form['nome']
-        descricao = request.form['descricao']
-        latitude = request.form['latitude']
-        longitude = request.form['longitude']
-        preco = request.form['preco']
-        tipo_imovel = request.form['tipo_imovel']
-        fotos = request.form['fotos']  # Imagens podem ser atualizadas ou não
+        try:
+            # Recebe os dados do formulário
+            nome = request.form.get('nome', '').strip()
+            descricao = request.form.get('descricao', '').strip()
+            latitude = request.form.get('latitude', '').strip()
+            longitude = request.form.get('longitude', '').strip()
+            preco = request.form.get('preco', '').strip()
+            tipo_imovel = request.form.get('tipo', '').strip()
+            quartos = request.form.get('quartos', '').strip()
+            area = request.form.get('area', '').strip()
+            file_paths = request.form.get('filePaths', '').strip()
 
-        conn = get_db_connection()
-        cursor = conn.cursor()
+            # Valida os campos obrigatórios
+            if not nome or not descricao or not latitude or not longitude or not quartos or not area:
+                return "Todos os campos obrigatórios devem ser preenchidos.", 400
 
-        cursor.execute("""
-            UPDATE apartamentos 
-            SET nome = %s, descricao = %s, latitude = %s, longitude = %s, preco = %s, tipo_imovel = %s, fotos = %s
-            WHERE id = %s
-        """, (nome, descricao, latitude, longitude, preco, tipo_imovel, fotos, id))
-        conn.commit()
-        conn.close()
+            # Converte valores numéricos
+            try:
+                latitude = float(latitude)
+                longitude = float(longitude)
+                preco = float(preco)
+                quartos = int(quartos)
+                area = int(area)
+            except ValueError:
+                return "Latitude, longitude, preço, área e número de quartos devem ser valores válidos.", 400
 
-        return redirect(url_for('apartamento', id=id))
+            # Atualiza os dados do apartamento no banco
+            cursor.execute("""
+                UPDATE apartamentos 
+                SET nome = %s, descricao = %s, latitude = %s, longitude = %s, preco = %s, tipo_imovel = %s, fotos = %s, quartos = %s, area = %s
+                WHERE id = %s
+            """, (nome, descricao, latitude, longitude, preco, tipo_imovel, file_paths, quartos, area, id))
+            conn.commit()
 
-    return render_template('editar_apartamento.html', apartamento=apartamento)
+            return redirect(url_for('apartamento', id=id))
+        except Exception as e:
+            return f"Erro ao atualizar o imóvel: {e}", 500
+        finally:
+            conn.close()
+
+    conn.close()
+    return render_template('editar_apartamento.html', imovel=imovel)
 
 def upload_to_supabase(bucket_name, file_path, file_data):
     """
