@@ -43,8 +43,8 @@
                     <h3 class="text-lg font-semibold">{{ apartamento.nome }}</h3>
                     <p class="text-sm text-gray-600">{{ apartamento.descricao }}</p>
                     <p class="text-lg font-semibold mt-2">R$ {{ apartamento.preco }}</p>
-                    <p class="text-sm text-gray-500">{{ apartamento.tipo }}</p>
-                    <a href="{{ url_for('apartamento', id=apartamento.id) }}" class="mt-2 text-blue-500 hover:underline">Ver mais</a>
+                    <p class="text-sm text-gray-500 mb-4">{{ apartamento.tipo }}</p>
+                    <a href="{{ url_for('apartamento', id=apartamento.id) }}" class="w-full bg-[#ff914d] text-white py-2 px-4 rounded-lg hover:bg-[#fac091]">Ver mais</a>
 
                 </div>
                 {% else %}
