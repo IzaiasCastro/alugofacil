@@ -98,6 +98,9 @@
                     var latitude = position.coords.latitude;
                     var longitude = position.coords.longitude;
 
+                    document.getElementById('latitude').value = latitude;
+                    document.getElementById('longitude').value = longitude;
+
                     // Inicializa o mapa com a localização atual
                     map = L.map('map').setView([latitude, longitude], 13);
 
