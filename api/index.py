@@ -139,6 +139,13 @@ def cadastro():
             if not nome or not descricao or not latitude or not longitude:
                 return "Todos os campos são obrigatórios.", 400
             
+            # Converte preço para float
+            try:
+                preco = preco.replace("R$", "").replace(".", "").replace(",", ".").strip()
+                preco = float(preco)
+            except ValueError:
+                return "O preço deve ser um valor numérico válido.", 400
+            
             # Converte valores numéricos
             try:
                 latitude = float(latitude)
@@ -382,6 +389,65 @@ def upload():
 
     return jsonify({"error": "Arquivo não permitido"}), 400
 
+@app.route('/excluir/<int:id>', methods=['POST'])
+def excluir_apartamento(id):
+    if 'user_id' not in session or session['user_type'] != 'dono':
+        return jsonify({"error": "Usuário não autorizado"}), 403
+
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        # Verifica se o apartamento pertence ao usuário logado
+        cursor.execute("SELECT id FROM apartamentos WHERE id = %s AND user_id = %s", (id, session['user_id']))
+        apartamento = cursor.fetchone()
+
+        if not apartamento:
+            return jsonify({"error": "Apartamento não encontrado ou não pertence ao usuário"}), 404
+
+        # Exclui o apartamento do banco de dados
+        cursor.execute("DELETE FROM apartamentos WHERE id = %s", (id,))
+        conn.commit()
+        return redirect(url_for('meus_apartamentos'))
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+    finally:
+        conn.close()
+
+@app.route('/publicar/<int:id>', methods=['POST'])
+def publicar_apartamento(id):
+    if 'user_id' not in session or session['user_type'] != 'dono':
+        return jsonify({"error": "Usuário não autorizado"}), 403
+
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        # Verifica se o apartamento pertence ao usuário logado
+        cursor.execute("SELECT id, publicado FROM apartamentos WHERE id = %s AND user_id = %s", (id, session['user_id']))
+        apartamento = cursor.fetchone()
+
+        if not apartamento:
+            return jsonify({"error": "Apartamento não encontrado ou não pertence ao usuário"}), 404
+
+        publicado = apartamento[1]
+
+        if publicado:
+            return jsonify({"error": "Apartamento já está publicado"}), 400
+
+        # Atualiza o status de publicação no banco de dados
+        cursor.execute("UPDATE apartamentos SET publicado = true WHERE id = %s", (id,))
+        conn.commit()
+
+        return jsonify({"message": "Apartamento publicado com sucesso"}), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+    finally:
+        conn.close()
 
 if __name__ == '__main__':
     app.run(debug=True)
