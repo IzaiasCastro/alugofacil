@@ -401,7 +401,7 @@ def excluir_apartamento(id):
         # Exclui o apartamento do banco de dados
         cursor.execute("DELETE FROM apartamentos WHERE id = %s", (id,))
         conn.commit()
-        return jsonify({"message": "Apartamento excluído com sucesso"}), 200
+        return redirect(url_for('meus_apartamentos'))
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
