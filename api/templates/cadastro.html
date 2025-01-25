@@ -153,8 +153,8 @@
                 // Verifica se a resposta é um objeto e se contém a URL
                 if (response && typeof response === 'object' && response.file_url) {
                     console.log("entrou aqui");
-                    // var filePathsInput = document.getElementById('filePaths');
-                    // filePathsInput.value += response.url + ',';  // Adiciona a URL ao campo oculto
+                    var filePathsInput = document.getElementById('filePaths');
+                    filePathsInput.value += 'https://riqzhrzpoxhubexqeqkz.supabase.co/storage/v1/object/public/' + response.file_url.full_path + ',';  // Adiciona a URL ao campo oculto
                 } else {
                     console.error("A resposta do backend não contém a URL esperada.");
                 }
