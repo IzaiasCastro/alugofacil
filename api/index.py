@@ -263,7 +263,7 @@ def editar_apartamento(id):
 
     # Busca os dados do apartamento
     cursor.execute("""
-        SELECT nome, descricao, latitude, longitude, fotos, preco, tipo_imovel, quartos, area 
+        SELECT nome, descricao, latitude, longitude, fotos, preco, tipo_imovel
         FROM apartamentos 
         WHERE id = %s
     """, [id])
@@ -281,9 +281,7 @@ def editar_apartamento(id):
         'longitude': apartamento[3],
         'fotos': apartamento[4],
         'preco': apartamento[5],
-        'tipo': apartamento[6],
-        'quartos': apartamento[7],
-        'area': apartamento[8]
+        'tipo': apartamento[6]
     }
 
     if request.method == 'POST':
@@ -295,12 +293,10 @@ def editar_apartamento(id):
             longitude = request.form.get('longitude', '').strip()
             preco = request.form.get('preco', '').strip()
             tipo_imovel = request.form.get('tipo', '').strip()
-            quartos = request.form.get('quartos', '').strip()
-            area = request.form.get('area', '').strip()
             file_paths = request.form.get('filePaths', '').strip()
 
             # Valida os campos obrigatórios
-            if not nome or not descricao or not latitude or not longitude or not quartos or not area:
+            if not nome or not descricao or not latitude or not longitude:
                 return "Todos os campos obrigatórios devem ser preenchidos.", 400
 
             # Converte valores numéricos
@@ -308,17 +304,15 @@ def editar_apartamento(id):
                 latitude = float(latitude)
                 longitude = float(longitude)
                 preco = float(preco)
-                quartos = int(quartos)
-                area = int(area)
             except ValueError:
-                return "Latitude, longitude, preço, área e número de quartos devem ser valores válidos.", 400
+                return "Latitude, longitude, preço devem ser valores válidos.", 400
 
             # Atualiza os dados do apartamento no banco
             cursor.execute("""
                 UPDATE apartamentos 
-                SET nome = %s, descricao = %s, latitude = %s, longitude = %s, preco = %s, tipo_imovel = %s, fotos = %s, quartos = %s, area = %s
+                SET nome = %s, descricao = %s, latitude = %s, longitude = %s, preco = %s, tipo_imovel = %s, fotos = %s
                 WHERE id = %s
-            """, (nome, descricao, latitude, longitude, preco, tipo_imovel, file_paths, quartos, area, id))
+            """, (nome, descricao, latitude, longitude, preco, tipo_imovel, file_paths, id))
             conn.commit()
 
             return redirect(url_for('apartamento', id=id))
