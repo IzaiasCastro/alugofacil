@@ -305,7 +305,7 @@ def upload_to_supabase(bucket_name, file_path, file_data):
         # Adiciona um log para ver o conteúdo de 'response'
         print(f"Response do upload: {response}")  # Imprime no terminal
         logging.info(f"Response do upload: {response}")  # Loga a resposta
-        return {"success": True, "url": response['full_path']}
+        return {"success": True, "url": response}
         
 
         # # Verifica se a resposta é um objeto com a URL pública
