@@ -30,7 +30,9 @@
                     <h3 class="font-semibold text-lg">Fotos:</h3>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
                         {% for foto in apartamento.fotos %}
-                            <img src="/{{ foto }}" alt="Imagem do apartamento" class="w-full h-48 object-cover rounded-md">
+                            {% if foto %}
+                                <img src="{{ foto }}" alt="Imagem do apartamento" class="w-full h-48 object-cover rounded-md">
+                            {% endif %}
                         {% endfor %}
                     </div>
                     

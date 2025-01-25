@@ -6,6 +6,7 @@ import psycopg2
 from flask import jsonify
 from supabase import create_client
 import logging
+from datetime import datetime
 
 
 # Configurações do Supabase
@@ -126,6 +127,8 @@ def cadastro():
     if request.method == 'POST':
         try:
             nome = request.form['nome']
+            preco = request.form['preco']
+            tipo_imovel = request.form['tipo']
             descricao = request.form['descricao']
             latitude = request.form['latitude']
             longitude = request.form['longitude']
@@ -148,9 +151,9 @@ def cadastro():
             cursor = conn.cursor()
 
             cursor.execute("""
-                INSERT INTO apartamentos(nome, descricao, latitude, longitude, user_id, fotos) 
-                VALUES (%s, %s, %s, %s, %s, %s)
-            """, (nome, descricao, latitude, longitude, user_id, file_paths))
+                INSERT INTO apartamentos(nome, descricao, latitude, longitude, user_id, fotos, preco, tipo_imovel) 
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+            """, (nome, descricao, latitude, longitude, user_id, file_paths, preco, tipo_imovel))
             conn.commit()
             cursor.close()
 
@@ -258,36 +261,68 @@ def editar_apartamento(id):
     conn = get_db_connection()
     cursor = conn.cursor()
 
-    cursor.execute("SELECT nome, descricao, latitude, longitude, fotos, preco, tipo_imovel FROM apartamentos WHERE id = %s", [id])
+    # Busca os dados do apartamento
+    cursor.execute("""
+        SELECT nome, descricao, latitude, longitude, fotos, preco, tipo_imovel
+        FROM apartamentos 
+        WHERE id = %s
+    """, [id])
     apartamento = cursor.fetchone()
-    conn.close()
 
     if not apartamento:
+        conn.close()
         return "Apartamento não encontrado", 404
 
+    # Mapeia os dados do apartamento para um dicionário
+    imovel = {
+        'nome': apartamento[0],
+        'descricao': apartamento[1],
+        'latitude': apartamento[2],
+        'longitude': apartamento[3],
+        'fotos': apartamento[4],
+        'preco': apartamento[5],
+        'tipo': apartamento[6]
+    }
+
     if request.method == 'POST':
-        nome = request.form['nome']
-        descricao = request.form['descricao']
-        latitude = request.form['latitude']
-        longitude = request.form['longitude']
-        preco = request.form['preco']
-        tipo_imovel = request.form['tipo_imovel']
-        fotos = request.form['fotos']  # Imagens podem ser atualizadas ou não
+        try:
+            # Recebe os dados do formulário
+            nome = request.form.get('nome', '').strip()
+            descricao = request.form.get('descricao', '').strip()
+            latitude = request.form.get('latitude', '').strip()
+            longitude = request.form.get('longitude', '').strip()
+            preco = request.form.get('preco', '').strip()
+            tipo_imovel = request.form.get('tipo', '').strip()
+            file_paths = request.form.get('filePaths', '').strip()
 
-        conn = get_db_connection()
-        cursor = conn.cursor()
+            # Valida os campos obrigatórios
+            if not nome or not descricao or not latitude or not longitude:
+                return "Todos os campos obrigatórios devem ser preenchidos.", 400
 
-        cursor.execute("""
-            UPDATE apartamentos 
-            SET nome = %s, descricao = %s, latitude = %s, longitude = %s, preco = %s, tipo_imovel = %s, fotos = %s
-            WHERE id = %s
-        """, (nome, descricao, latitude, longitude, preco, tipo_imovel, fotos, id))
-        conn.commit()
-        conn.close()
+            # Converte valores numéricos
+            try:
+                latitude = float(latitude)
+                longitude = float(longitude)
+                preco = float(preco)
+            except ValueError:
+                return "Latitude, longitude, preço devem ser valores válidos.", 400
 
-        return redirect(url_for('apartamento', id=id))
+            # Atualiza os dados do apartamento no banco
+            cursor.execute("""
+                UPDATE apartamentos 
+                SET nome = %s, descricao = %s, latitude = %s, longitude = %s, preco = %s, tipo_imovel = %s, fotos = %s
+                WHERE id = %s
+            """, (nome, descricao, latitude, longitude, preco, tipo_imovel, file_paths, id))
+            conn.commit()
 
-    return render_template('editar_apartamento.html', apartamento=apartamento)
+            return redirect(url_for('apartamento', id=id))
+        except Exception as e:
+            return f"Erro ao atualizar o imóvel: {e}", 500
+        finally:
+            conn.close()
+
+    conn.close()
+    return render_template('editar_apartamento.html', imovel=imovel)
 
 def upload_to_supabase(bucket_name, file_path, file_data):
     """
@@ -305,19 +340,8 @@ def upload_to_supabase(bucket_name, file_path, file_data):
         # Adiciona um log para ver o conteúdo de 'response'
         print(f"Response do upload: {response}")  # Imprime no terminal
         logging.info(f"Response do upload: {response}")  # Loga a resposta
-
-        # Verifica se a resposta é um objeto com a URL pública
-        if isinstance(response, dict) and "path" in response:
-            # Obtém o caminho completo do arquivo
-            full_path = response['path']
-            
-            # Obtém a URL pública do arquivo
-            public_url = supabase.storage.from_(bucket_name).get_public_url(full_path)
-            print(f"URL pública do arquivo: {public_url['publicURL']}")  # Exibe a URL pública
-            return {"success": True, "url": public_url['publicURL']}
-        else:
-            print("Erro: O upload não retornou uma resposta válida.")
-            return {"success": False, "error": "Upload falhou, sem resposta válida."}
+        return {"success": True, "url": response}
+       
     except Exception as e:
         print(f"Erro na função de upload: {str(e)}")  # Imprime qualquer exceção
         return {"success": False, "error": str(e)}
@@ -338,8 +362,12 @@ def upload():
 
     if file and allowed_file(file.filename):
         try:
+            # Nome único com data e hora
+            timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+            unique_filename = f"{timestamp}_{secure_filename(file.filename)}"
+
             # Define o caminho do arquivo no bucket
-            filename = secure_filename(file.filename)
+            filename = secure_filename(unique_filename)
             file_path = f"uploads/{filename}"
 
             # Faz o upload diretamente para o Supabase

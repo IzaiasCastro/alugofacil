@@ -98,6 +98,9 @@
                     var latitude = position.coords.latitude;
                     var longitude = position.coords.longitude;
 
+                    document.getElementById('latitude').value = latitude;
+                    document.getElementById('longitude').value = longitude;
+
                     // Inicializa o mapa com a localização atual
                     map = L.map('map').setView([latitude, longitude], 13);
 
@@ -151,9 +154,10 @@
                 console.log("Resposta recebida do backend: ", response);  // Loga toda a resposta
 
                 // Verifica se a resposta é um objeto e se contém a URL
-                if (response && typeof response === 'object' && response.url) {
+                if (response && typeof response === 'object' && response.file_url) {
+                    console.log("entrou aqui");
                     var filePathsInput = document.getElementById('filePaths');
-                    filePathsInput.value += response.url + ',';  // Adiciona a URL ao campo oculto
+                    filePathsInput.value += 'https://riqzhrzpoxhubexqeqkz.supabase.co/storage/v1/object/public/' + response.file_url.full_path + ',';  // Adiciona a URL ao campo oculto
                 } else {
                     console.error("A resposta do backend não contém a URL esperada.");
                 }
