@@ -128,7 +128,7 @@ def cadastro():
         try:
             nome = request.form['nome']
             preco = request.form['preco']
-            tipo_imovel = request.form['tipo_imovel']
+            tipo_imovel = request.form['tipo']
             descricao = request.form['descricao']
             latitude = request.form['latitude']
             longitude = request.form['longitude']
