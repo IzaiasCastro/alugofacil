@@ -305,19 +305,21 @@ def upload_to_supabase(bucket_name, file_path, file_data):
         # Adiciona um log para ver o conteúdo de 'response'
         print(f"Response do upload: {response}")  # Imprime no terminal
         logging.info(f"Response do upload: {response}")  # Loga a resposta
+        return {"success": True, "url": response['full_path']}
+        
 
-        # Verifica se a resposta é um objeto com a URL pública
-        if isinstance(response, dict) and "path" in response:
-            # Obtém o caminho completo do arquivo
-            full_path = response['path']
+        # # Verifica se a resposta é um objeto com a URL pública
+        # if isinstance(response, dict) and "path" in response:
+        #     # Obtém o caminho completo do arquivo
+        #     full_path = response['path']
             
-            # Obtém a URL pública do arquivo
-            public_url = supabase.storage.from_(bucket_name).get_public_url(full_path)
-            print(f"URL pública do arquivo: {public_url['publicURL']}")  # Exibe a URL pública
-            return {"success": True, "url": public_url['publicURL']}
-        else:
-            print("Erro: O upload não retornou uma resposta válida.")
-            return {"success": False, "error": "Upload falhou, sem resposta válida."}
+        #     # Obtém a URL pública do arquivo
+        #     public_url = supabase.storage.from_(bucket_name).get_public_url(full_path)
+        #     print(f"URL pública do arquivo: {public_url['publicURL']}")  # Exibe a URL pública
+        #     return {"success": True, "url": public_url['publicURL']}
+        # else:
+        #     print("Erro: O upload não retornou uma resposta válida.")
+        #     return {"success": False, "error": "Upload falhou, sem resposta válida."}
     except Exception as e:
         print(f"Erro na função de upload: {str(e)}")  # Imprime qualquer exceção
         return {"success": False, "error": str(e)}
