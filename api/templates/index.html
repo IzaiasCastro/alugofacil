@@ -39,13 +39,14 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mt-4">
                 {% for apartamento in apartamentos %}
                 <div class="bg-white p-4 rounded-lg shadow-md">
+                <a href="{{ url_for('apartamento', id=apartamento.id) }}">
                     <img src="{{ apartamento.fotos[0] }}" alt="{{ apartamento.nome }}" class="w-full h-48 object-cover rounded-md mb-4">
                     <h3 class="text-lg font-semibold">{{ apartamento.nome }}</h3>
                     <p class="text-sm text-gray-600">{{ apartamento.descricao }}</p>
                     <p class="text-lg font-semibold mt-2">R$ {{ apartamento.preco }}</p>
                     <p class="text-sm text-gray-500 mb-4">{{ apartamento.tipo }}</p>
                     <a href="{{ url_for('apartamento', id=apartamento.id) }}" class="w-full bg-[#ff914d] text-white py-2 px-4 rounded-lg hover:bg-[#fac091]">Ver mais</a>
-
+                </a>
                 </div>
                 {% else %}
                 <p class="text-gray-500">Nenhum imóvel encontrado com os filtros aplicados.</p>
