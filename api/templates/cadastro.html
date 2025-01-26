@@ -34,6 +34,35 @@
                 </div>
             </div>
 
+            <!-- endereco -->
+            <div class="grid grid-cols gap-4">
+                <div class="mb-4">
+                    <label for="nome" class="block text-sm font-medium text-gray-600">Endereço:</label>
+                    <input type="text" id="endereco" name="endereco" class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                </div>
+            </div>
+            <!-- bairro -->
+            <div class="grid grid-cols gap-4">
+                <div class="mb-4">
+                    <label for="nome" class="block text-sm font-medium text-gray-600">Bairro:</label>
+                    <input type="text" id="bairro" name="bairro" class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                </div>
+            </div>
+            <!-- cidade -->
+            <div class="grid grid-cols gap-4">
+                <div class="mb-4">
+                    <label for="nome" class="block text-sm font-medium text-gray-600">Cidade:</label>
+                    <select id="cidade" name="cidade" class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                        <option value="Parnaíba-PI">Parnaíba-PI</option>
+                        <option value="Luis Correia-PI">Luis Correia-PI</option>
+                        <option value="Ilha Grande-PI">Ilha Grande-PI</option>
+                        <option value="Cajueiro da Praia-PI">Cajueiro da Praia-PI</option>
+                        <option value="Araioses-MA">Araioses-MA</option>
+                        <option value="Tutóia-MA">Tutóia-MA</option>
+                    </select>
+                </div>
+            </div>
+
             <!-- Tipo de imóvel -->
             <div class="mb-4">
                 <label for="tipo" class="block text-sm font-medium text-gray-600">Tipo de Imóvel:</label>
@@ -57,6 +86,11 @@
             <div class="mb-6">
                 <label for="preco" class="block text-sm font-medium text-gray-600">Preço (R$):</label>
                 <input type="text" id="preco" name="preco" class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="R$ 0,00" required>
+            </div>
+
+            <div class="mb-6">
+                <label for="celular" class="block text-sm font-medium text-gray-600">WhatsApp para Contato:</label>
+                <input id="celular" type="text" placeholder="(00) 00000-0000" class="border p-2 rounded-md">
             </div>
 
             <!-- Fotos do Imóvel -->
@@ -84,6 +118,12 @@
         numeralDecimalMark: ',',
         delimiter: '.',
         prefix: 'R$ '
+    });
+    // Aplica a máscara de celular ao campo de whatsapp
+    new Cleave('#celular', {
+        delimiters: ['(', ') ', '-'],
+        blocks: [0, 2, 5, 4],
+        numericOnly: true
     });
 
         // Função para obter a localização do usuário

@@ -71,6 +71,34 @@
                     </div>
                 </div>
             </div>
+
+            <div class="mt-6">
+                <h3 class="font-semibold text-lg mb-2">Fale com o anunciante:</h3>
+                <div class="flex gap-4">
+                    <!-- Botão Chamativo para WhatsApp -->
+                    <a href="https://wa.me/55?text=Olá, estou interessado no apartamento {{ apartamento.nome }}!"
+                       target="_blank"
+                       class="bg-gradient-to-r from-green-500 to-green-700 text-white px-6 py-3 rounded-lg flex items-center gap-3 shadow-lg hover:shadow-xl transform hover:scale-105 transition duration-300">
+                        <img src="https://cdn-icons-png.flaticon.com/512/733/733585.png" alt="WhatsApp" class="w-6 h-6">
+                        <span class="text-lg font-bold">Fale pelo WhatsApp</span>
+                    </a>
+                </div>
+            </div>
+
+            <div class="mt-6">
+                <h3 class="font-semibold text-lg mb-2">Compartilhe:</h3>
+                <div class="flex gap-4">
+                    <!-- WhatsApp -->
+                    <a href="https://wa.me/?text={{ apartamento.nome }} - Veja mais detalhes: {{ request.url }}"
+                       target="_blank" 
+                       class="bg-green-500 text-white px-4 py-2 rounded-md flex items-center gap-2 hover:bg-green-600">
+                        <img src="https://cdn-icons-png.flaticon.com/512/733/733585.png" alt="WhatsApp" class="w-5 h-5">
+                    </a>
+
+                </div>
+            </div>
+
+            
         </div>
 
         {% include 'footer.html' %}
